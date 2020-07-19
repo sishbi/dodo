@@ -1,0 +1,4 @@
+# support persistent store for when running in Docker
+spring:
+  datasource:
+    url: jdbc:h2:file:/var/dodo/db

@@ -1,0 +1,26 @@
+Configuration:
+  status: info
+  name: Default
+  properties:
+  appenders:
+    Console:
+      name: STDOUT
+      target: SYSTEM_OUT
+      PatternLayout:
+        pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] [%-5level] %c{1} - %msg%n"
+  loggers:
+    logger:
+      - name: sishbi
+        level: debug
+        additivity: false
+        AppenderRef:
+          ref: STDOUT
+      - name: org.springframework
+        level: info
+        additivity: false
+        AppenderRef:
+          ref: STDOUT
+    Root:
+      level: warn
+      AppenderRef:
+        ref: STDOUT
