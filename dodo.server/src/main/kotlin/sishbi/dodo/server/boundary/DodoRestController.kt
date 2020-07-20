@@ -1,7 +1,6 @@
 package sishbi.dodo.server.boundary
 
 import mu.KotlinLogging
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import sishbi.dodo.server.control.DodoTaskService
@@ -22,17 +21,15 @@ class DodoRestController(val service: DodoTaskService) {
 
   /** GET single task. */
   @GetMapping("/{id}")
-  fun getTask(@PathVariable id: Long): ResponseEntity<DodoTask?> {
-    LOG.debug {"get: $id"}
-    val task = service.single(id)
-    return if (task.isPresent) {
-      val got = task.get()
-      LOG.debug {"got: $got"}
-      ResponseEntity.ok(got)
-    } else {
-      LOG.debug {"not-found: $id"}
-      ResponseEntity.status(HttpStatus.NOT_FOUND).body(null)
-    }
+  fun getTask(@PathVariable id: Long) = service.single(id).let {
+      if (it.isPresent) {
+        val got = it.get()
+        LOG.debug {"got: $got"}
+        ResponseEntity.ok(got)
+      } else {
+        LOG.debug {"get - not-found: id=$id"}
+        ResponseEntity.notFound().build()
+      }
   }
 
   /** POST task. */
@@ -41,18 +38,30 @@ class DodoRestController(val service: DodoTaskService) {
     LOG.debug {"create: $task"}
     val saved = service.save(task)
     LOG.debug {"created: id=${saved.id}"}
-    return ResponseEntity.ok("created : ${saved.id}")
+    return ResponseEntity.ok("created: ${saved.id}")
   }
 
   /** PUT task. */
   @PutMapping
-  fun updateTask(@RequestBody task: DodoTask) = ResponseEntity.ok(service.save(task))
+  fun updateTask(@RequestBody task: DodoTask) = task.id?.let {
+    val found = service.single(it)
+    if (found.isPresent) {
+      LOG.debug {"updating: id=${task.id}"}
+      service.save(task)
+      ResponseEntity.ok("updated")
+    } else {
+      LOG.debug {"update - not-found: id=${task.id}"}
+      ResponseEntity.notFound().build()
+    }
+  }
 
   /** DELETE task. */
   @DeleteMapping("/{id}")
   fun deleteTask(@PathVariable id: Long) = if (service.delete(id)) {
-    ResponseEntity.ok()
+    LOG.debug {"deleted: id=$id"}
+    ResponseEntity.ok("deleted")
   } else {
-    ResponseEntity.notFound()
+    LOG.debug {"delete - not-found: id=$id"}
+    ResponseEntity.notFound().build()
   }
 }

@@ -58,14 +58,14 @@ class ApplicationTests(@LocalServerPort var port: Int) {
 			LOG.debug {"task: $it"}
 		}
 
-		// GET single
+		// GET single - found
 		val res4 = rest.getForEntity("$url/$id", DodoTask::class.java)
 		assertEquals(HttpStatus.OK, res4.statusCode)
 		val got = res4.body
 		LOG.debug { "got: $got" }
 		assertEquals("first task", got?.name)
 
-		// GET single
+		// GET single - not found
 		val res5 = rest.getForEntity("$url/2", DodoTask::class.java)
 		assertEquals(HttpStatus.NOT_FOUND, res5.statusCode)
 		val notFound = res5.body
@@ -107,6 +107,15 @@ class ApplicationTests(@LocalServerPort var port: Int) {
 		tasks4?.forEach {
 			LOG.debug {"task: $it"}
 		}
+
+		// PUT - not found
+		updated?.let {
+			it.id = 3
+			rest.put(url, HttpEntity(it))
+		}
+
+		// DELETE - not found
+		rest.delete("$url/3")
 	}
 
 }
